@@ -1,13 +1,7 @@
-﻿// using System;
-// using System.Collections;
-// using System.Collections.Generic;
-
-var rawInput = Utils.GetInput("Day2Input1.txt");
+﻿var rawInput = Utils.GetInput("Day2Input1.txt");
 
 string[] lines = rawInput.Split('\n');
 
-
-//Part1
 Dictionary<int, Dictionary<string, int>> parsedGames = new Dictionary<int, Dictionary<string, int>>();
 Dictionary<string, int> maxAllowed = new Dictionary<string, int>
 {
@@ -18,25 +12,26 @@ Dictionary<string, int> maxAllowed = new Dictionary<string, int>
 
 foreach (var line in lines)
 {
-    var lineSplit = line.Split(':');
-
-    var pulls = lineSplit[1].Split(';');
-    if (pulls == null) continue;
     Dictionary<string, int> gameResults = new Dictionary<string, int>();
-    foreach(var pull in pulls)
+
+    var nameLinePair = line.Split(':');
+
+    foreach(var pull in nameLinePair[1].Split(';'))
     {
         foreach (var rollValue in pull.Split(", "))
         {
             var trimmedVal = rollValue.Trim();
-            var values = trimmedVal.Split(' ');
-            int value = int.Parse(values[0]);
-            if (!gameResults.ContainsKey(values[1]))
-                gameResults.Add(values[1], value);
-            else if (gameResults[values[1]] < value)
-                gameResults[values[1]] = value;
+            var kvp = trimmedVal.Split(' ');
+            string key = kvp[1];
+            int value = int.Parse(kvp[0]);
+            if (!gameResults.ContainsKey(key))
+                gameResults.Add(key, value);
+            else if (gameResults[key] < value)
+                gameResults[key] = value;
         }
     }
-    parsedGames.Add(int.Parse(lineSplit[0].Substring(5)), gameResults);
+    var gameID = int.Parse(nameLinePair[0].Substring(5));
+    parsedGames.Add(gameID, gameResults);
 }
 
 int sum = 0;
@@ -56,7 +51,7 @@ for (int i = 1; i <= parsedGames.Count; i++)
     if (isValid)
         sum += i;
 
-        sumPowers += power;
+    sumPowers += power;
 }
 
 
