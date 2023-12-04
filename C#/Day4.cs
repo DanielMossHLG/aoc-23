@@ -22,7 +22,7 @@ public static class Day4
             cards.Add(card);
         }
 
-        //Part 1
+        int sum = 0;
         int points = 0;
         foreach (var card in cards)
         {
@@ -35,36 +35,19 @@ public static class Day4
             }
 
             card.Value = (int)MathF.Pow(2, matches - 1);
-            //Console.WriteLine($"Card: {card.ID} | Matches: {matches} | Value: {card.Value}");
             points += card.Value;
-        }
-        Console.WriteLine($"Total points: {points}");
-        
-        //Part 2
-        int sum = 0;
-        for (int i = 0; i < cards.Count; i++)
-        {
-            int matches = 0;
-
-            foreach (var number in cards[i].OwnedNumbers)
-            {
-                if (cards[i].WinningNumbers.Contains(number) && !string.IsNullOrEmpty(number))
-                    matches++;
-            }
             
-            //Console.WriteLine($"Card: {cards[i].ID} | Matches: {matches} | Amount: {cards[i].Amount}");
-
             for (int j = 1; j <= matches; j++)
             {
-                var indexNext = cards.FindIndex(x => x.ID == cards[i].ID + j);
+                var indexNext = cards.FindIndex(x => x.ID == card.ID + j);
                 if (indexNext == -1) break;
 
-                cards[indexNext].Amount += cards[i].Amount;
+                cards[indexNext].Amount += card.Amount;
             }
 
-            sum += cards[i].Amount;
+            sum += card.Amount;
         }
-        Console.WriteLine($"Total number of cards: {sum}");
+        Console.WriteLine($"Total points: {points} | Total number of cards: {sum}");
     }
 }
 
