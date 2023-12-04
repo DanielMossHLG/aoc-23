@@ -36,7 +36,7 @@ for (let i = 0; i < input.length; i++)
 
 let gearSum = 0;
 Object.keys(gears).forEach(key => {
-    if (gears[key].summate)
+    if (gears[key].inProximity == 2)
         gearSum += gears[key].value
 })
 console.log(`Part 1 Answer: ${sum} | Part 2 Answer: ${gearSum}`);
@@ -95,13 +95,14 @@ function CheckIndex(i, j, number)
         {
             if (gears.hasOwnProperty(`x${j}y${i}`))
             {
-                gears[`x${j}y${i}`].summate = true;
+                gears[`x${j}y${i}`].inProximity++;
                 gears[`x${j}y${i}`].value *= parseInt(number);
             }
             else
             {
                 gears[`x${j}y${i}`] = {};
                 gears[`x${j}y${i}`].value = parseInt(number);
+                gears[`x${j}y${i}`].inProximity = 1;
             }
         }
         return true;
