@@ -36,6 +36,7 @@ def CheckUpperDownwards(index, currentCheck):
 
 
 def FindWaysToWin(list):
+    print(list)
     WaysToWin = 1
     for index, time in enumerate(list):
         roots = np.roots([-1, time, -distances[index]])
@@ -56,5 +57,14 @@ def FindWaysToWin(list):
         WaysToWin *= upperBound - lowerBound + 1
 
     return WaysToWin
+
+print(FindWaysToWin(times))
+
+times = rawInput[0].split()
+times.pop(0)
+times = [int(''.join(times))]
+distances = rawInput[1].split()
+distances.pop(0)
+distances = [int(''.join(distances))]
 
 print(FindWaysToWin(times))
