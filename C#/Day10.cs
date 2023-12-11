@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 public static class Day10
 {
     private static string[] _lines = Array.Empty<string>();
@@ -16,7 +18,7 @@ public static class Day10
     public static void Solution()
     {
         string rawInput = Utils.GetInput("day10input1.txt");
-        _lines = rawInput.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        _lines = rawInput.Split("\n", StringSplitOptions.RemoveEmptyEntries);
         (int x, int y) currentCoordinates = (-1, -1);
 
         for (int i = 0; i < _lines.Length; i++)
@@ -74,7 +76,7 @@ public static class Day10
 
         var encased = (_lines.Length * _lines[0].Length) - _blockers.Count - _freeTiles.Count;
 
-        Console.WriteLine(_freeTiles.Count);
+        Console.WriteLine($"Total tiles: {_lines.Length * _lines[0].Length} | Blockers: {_blockers.Count} | Free tiles: {_freeTiles.Count} | Encapsulated: {encased}");
     }
 
     private static (int x, int y) FindNext((int x, int y) currentCoordinates, (int x, int y) lastCoordinates)
@@ -117,11 +119,23 @@ public static class Day10
                 if (_blockers[(i, y)] == '|') break;
                 if (_blockers[(i, y)] == 'J')
                 {
-                    //CheckBelowLeft
+                    if (CheckBelowLeft(i, y))
+                    {
+                        Console.WriteLine("Checked below left");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
                 if (_blockers[(i, y)] == '7')
                 {
-                    //CheckAboveLeft
+                    if (CheckAboveLeft(i, y))
+                    {
+                        Console.WriteLine("Checked above left");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
             }
             if (_freeTiles.Contains((i, y))) 
@@ -137,11 +151,23 @@ public static class Day10
                 if (_blockers[(i, y)] == '|') break;
                 if (_blockers[(i, y)] == 'L')
                 {
-                    //CheckBelowRight
+                    if (CheckBelowRight(i, y))
+                    {
+                        Console.WriteLine("Checked below right");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
                 if (_blockers[(i, y)] == 'F')
                 {
-                    //CheckAboveRight
+                    if (CheckAboveRight(i, y))
+                    {
+                        Console.WriteLine("Checked above right");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
             }
             if (_freeTiles.Contains((i, y))) 
@@ -157,11 +183,23 @@ public static class Day10
                 if (_blockers[(x, i)] == '-') break;
                 if (_blockers[(x, i)] == 'J')
                 {
-                    //CheckRightUp
+                    if (CheckRightUp(x, i))
+                    {
+                        Console.WriteLine("Checked right up");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
-                if (_blockers[(i, y)] == 'L')
+                if (_blockers[(x, i)] == 'L')
                 {
-                    //CheckLeftUp
+                    if (CheckLeftUp(x, i))
+                    {
+                        Console.WriteLine("Checked left up");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
             }
             if (_freeTiles.Contains((x, i))) 
@@ -177,11 +215,23 @@ public static class Day10
                 if (_blockers[(x, i)] == '-') break;
                 if (_blockers[(x, i)] == '7')
                 {
-                    //CheckRightDown
+                    if (CheckRightDown(x, i))
+                    {
+                        Console.WriteLine($"Checked right down");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
-                if (_blockers[(i, y)] == '7')
+                if (_blockers[(x, i)] == 'J')
                 {
-                    //CheckLeftDown
+                    if (CheckLeftDown(x, i))
+                    {
+                        Console.WriteLine("Checked left down");
+                        _freeTiles.Add((x, y));
+                        return;
+                    }
+                    break;
                 }
             }
             if (_freeTiles.Contains((x, i))) 
@@ -190,5 +240,94 @@ public static class Day10
                 return;
             }
         }
+    }
+
+    private static bool CheckBelowLeft(int x, int y)
+    {
+        while (x >= 0)
+        {
+            Console.WriteLine($"Checking below left: {x},{y} | Currently: {_lines[y][x]}");
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '|' or '7' or 'F') return false;
+            x--;
+        }
+        return true;
+    }
+    
+    private static bool CheckAboveLeft(int x, int y)
+    {
+        while (x >= 0)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '|' or 'J' or 'L') return false;
+            x--;
+        }
+        return true;
+    }
+    
+    private static bool CheckBelowRight(int x, int y)
+    {
+        while (x < _lines[y].Length)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '|' or '7' or 'F') return false;
+            x++;
+        }
+        return true;
+    }
+    
+    private static bool CheckAboveRight(int x, int y)
+    {
+        while (x < _lines[y].Length)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '|' or 'J' or 'L') return false;
+            x++;
+        }
+        return true;
+    }
+    
+    private static bool CheckRightUp(int x, int y)
+    {
+        while (y >= 0)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '-' or 'L' or 'F') return false;
+            y--;
+        }
+        return true;
+    }
+    
+    private static bool CheckLeftUp(int x, int y)
+    {
+        while (y >= 0)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '-' or 'J' or '7') return false;
+            y--;
+        }
+        return true;
+    }
+    
+    private static bool CheckRightDown(int x, int y)
+    {
+        while (y < _lines.Length)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '-' or 'L' or 'F') return false;
+            y++;
+        }
+        return true;
+    }
+    
+    private static bool CheckLeftDown(int x, int y)
+    {
+        while (y < _lines.Length)
+        {
+            if (_freeTiles.Contains((x, y))) return true;
+            if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '-' or 'J' or '7') return false;
+            y++;
+        }
+        return true;
     }
 }
