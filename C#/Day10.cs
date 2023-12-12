@@ -19,6 +19,7 @@ public static class Day10
     {
         string rawInput = Utils.GetInput("day10input1.txt");
         _lines = rawInput.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        
         (int x, int y) currentCoordinates = (-1, -1);
 
         for (int i = 0; i < _lines.Length; i++)
@@ -42,8 +43,7 @@ public static class Day10
                     if (x == y) continue;
 
                     var check = CheckIndex(currentCoordinates.x + x, currentCoordinates.y + y);
-
-                    if (check != '.' && _lookup[check].Contains((x, y)))
+                    if (check != '.' && _lookup[check].Contains((-x, -y)))
                     {
                         currentCoordinates.x += x;
                         currentCoordinates.y += y;
@@ -51,17 +51,24 @@ public static class Day10
                     }
                 }
         };
-        findFirstPipe();
-        while (true)
+        Action constructPipe = delegate
         {
-            _blockers.Add((currentCoordinates.x, currentCoordinates.y), _lines[currentCoordinates.y][currentCoordinates.x]);
-            var temp = FindNext(currentCoordinates, lastCoordinates);
-            lastCoordinates = currentCoordinates;
-            currentCoordinates = temp;
-            totalLength++;
-            if (_lines[currentCoordinates.y][currentCoordinates.x] == 'S') break;
-        }
+            while (true)
+            {
+                _blockers.Add((currentCoordinates.x, currentCoordinates.y), _lines[currentCoordinates.y][currentCoordinates.x]);
+                var temp = FindNext(currentCoordinates, lastCoordinates);
+                lastCoordinates = currentCoordinates;
+                currentCoordinates = temp;
+                totalLength++;
+                if (_lines[currentCoordinates.y][currentCoordinates.x] == 'S') break;
+            }
+            
+        };
+        findFirstPipe();
+        constructPipe();
         _blockers.Add((currentCoordinates.x, currentCoordinates.y), _lines[currentCoordinates.y][currentCoordinates.x]);
+        
+        
         Console.WriteLine($"Part 1: {totalLength / 2}");
 
         while (true)
@@ -75,7 +82,6 @@ public static class Day10
         }
 
         var encased = (_lines.Length * _lines[0].Length) - _blockers.Count - _freeTiles.Count;
-
         Console.WriteLine($"Total tiles: {_lines.Length * _lines[0].Length} | Blockers: {_blockers.Count} | Free tiles: {_freeTiles.Count} | Encapsulated: {encased}");
     }
 
@@ -121,7 +127,6 @@ public static class Day10
                 {
                     if (CheckBelowLeft(i, y))
                     {
-                        Console.WriteLine("Checked below left");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -131,7 +136,6 @@ public static class Day10
                 {
                     if (CheckAboveLeft(i, y))
                     {
-                        Console.WriteLine("Checked above left");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -153,7 +157,6 @@ public static class Day10
                 {
                     if (CheckBelowRight(i, y))
                     {
-                        Console.WriteLine("Checked below right");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -163,7 +166,6 @@ public static class Day10
                 {
                     if (CheckAboveRight(i, y))
                     {
-                        Console.WriteLine("Checked above right");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -185,7 +187,6 @@ public static class Day10
                 {
                     if (CheckRightUp(x, i))
                     {
-                        Console.WriteLine("Checked right up");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -195,7 +196,6 @@ public static class Day10
                 {
                     if (CheckLeftUp(x, i))
                     {
-                        Console.WriteLine("Checked left up");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -208,7 +208,7 @@ public static class Day10
                 return;
             }
         }
-        for (int i = y; i <_lines.Length; i++)
+        for (int i = y; i < _lines.Length; i++)
         {
             if (_blockers.ContainsKey((x, i)))
             {
@@ -217,7 +217,6 @@ public static class Day10
                 {
                     if (CheckRightDown(x, i))
                     {
-                        Console.WriteLine($"Checked right down");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -227,7 +226,6 @@ public static class Day10
                 {
                     if (CheckLeftDown(x, i))
                     {
-                        Console.WriteLine("Checked left down");
                         _freeTiles.Add((x, y));
                         return;
                     }
@@ -246,7 +244,6 @@ public static class Day10
     {
         while (x >= 0)
         {
-            Console.WriteLine($"Checking below left: {x},{y} | Currently: {_lines[y][x]}");
             if (_freeTiles.Contains((x, y))) return true;
             if (_blockers.ContainsKey((x, y)) && _blockers[(x, y)] is '|' or '7' or 'F') return false;
             x--;
