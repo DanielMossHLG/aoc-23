@@ -1,1 +1,1 @@
-Day10.Solution();
+Day1_2024.Solution();
