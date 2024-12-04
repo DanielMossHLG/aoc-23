@@ -1,11 +1,13 @@
 public static class Day4_2024
 {
 	private static string k_stringToExpect = "XMAS";
-	
+
+	private static string k_ValidCharacters = "MS";
+
 	private static List<List<char>> _input = new List<List<char>>();
 
 	private static Dictionary<Direction, (int xMult, int yMult)> DirectionLookup =
-		new Dictionary<Direction, (int xMult, int yMult)>()
+		new ()
 		{
 			{Direction.Up, (0, -1)},
 			{Direction.Left, (-1, 0)},
@@ -23,7 +25,6 @@ public static class Day4_2024
 		string rawInput = Utils.GetInput("day4_2024.txt").Trim();
 
 		List<string> lines = rawInput.Split('\n').ToList();
-		
 
 		for (int i = 0; i < lines.Count; i++)
 		{
@@ -31,11 +32,15 @@ public static class Day4_2024
 		}
 
 		int part1Result = 0;
+		int part2Result = 0;
 		
 		for (int y = 0; y < _input.Count; y++)
 		{
 			for (int x = 0; x < _input[y].Count; x++)
 			{
+				if (_input[y][x] == 'A' && CheckPart2(y, x))
+					part2Result++;
+
 				if (_input[y][x] != 'X')
 					continue;
 				
@@ -59,7 +64,7 @@ public static class Day4_2024
 
 		}
 
-		Console.WriteLine($"Part 1: {part1Result}");
+		Console.WriteLine($"Part 1: {part1Result} | Part 2: {part2Result}");
 	}
 	
 
@@ -81,7 +86,23 @@ public static class Day4_2024
 				return false;
 			}
 		}
-		Console.WriteLine($"X: {x} Y: {y} | {_input[y][x]}");
+		return true;
+	}
+
+	private static bool CheckPart2(int y, int x)
+	{
+		if (y < 1 || x < 1 || y + 2 > _input.Count || x + 2 > _input[0].Count)
+			return false;
+
+		if (!k_ValidCharacters.Contains(_input[y - 1][x - 1])
+		    || !k_ValidCharacters.Contains(_input[y + 1][x - 1])
+		    || !k_ValidCharacters.Contains(_input[y - 1][x + 1])
+		    || !k_ValidCharacters.Contains(_input[y + 1][x + 1]))
+			return false;
+
+		if (_input[y - 1][x - 1] == _input[y + 1][x + 1] || _input[y - 1][x + 1] == _input[y + 1][x - 1])
+			return false;
+
 		return true;
 	}
 }
