@@ -1,1 +1,1 @@
-Day4_2024.Solution();
+Day5_2024.Solution();
