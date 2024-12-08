@@ -81,7 +81,7 @@ public static class Day7_2024
 
         private bool AnswerValid(Operations operations)
         {
-            int output = Components[0];
+            long output = Components[0];
 
             Dictionary<int, bool> multiplierLookup = new Dictionary<int, bool>()
             {
