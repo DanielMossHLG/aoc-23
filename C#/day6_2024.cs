@@ -1,14 +1,15 @@
 public static class Day6_2024
 {
-    private static List<List<Point>> points = new List<List<Point>>();
-
     private static Dictionary<char, CardinalDirection> cardinalDirections = new Dictionary<char, CardinalDirection>();
     
     public static void Solution()
     {
+        int time = DateTime.Now.Millisecond;
         string rawInput = Utils.GetInput("day6_2024.txt").Trim();
 
         string[] lines = rawInput.Split('\n', StringSplitOptions.TrimEntries);
+        
+        var PointMap = new Point[lines.Length][];
 
         cardinalDirections = new Dictionary<char, CardinalDirection>()
         {
@@ -23,41 +24,66 @@ public static class Day6_2024
         for (int y = 0; y < lines.Length; y++)
         {
             char[] points = lines[y].ToCharArray();
+            PointMap[y] = new Point[points.Length];
             
             for (int x = 0; x < points.Length; x++)
             {
                 var character = points[x];
                 bool isStart = !(character is '.' or '#');
                 if (isStart) start = (x, y);
-                _ = new Point(x, y, character == '#', !isStart ? CardinalDirection.None : cardinalDirections[character]);
+                PointMap[y][x] = new Point(x, y, character == '#', !isStart ? CardinalDirection.None : cardinalDirections[character]);
             }
         }
 
-        Guard guard = new Guard(start);
-
-        while (!guard.HasLooped && !guard.HasLeft)
+        var guard = new Guard(start, PointMap);
+        Point.StartCoordinates = start;
+        
+        PointMap[start.y][start.x].FaceDirection(CardinalDirection.Up);
+        
+        List<(int x, int y)> pointsVisited = new List<(int x, int y)>();
+        while (!(guard.HasLooped || guard.HasLeft))
         {
             guard.TakeTurn();
-            Console.WriteLine($"Current point: {guard.CurrentPoint} | Current direction: {guard.CurrentDirection}");
+            if (guard.CurrentPoint.Coordinates != start && !pointsVisited.Contains(guard.CurrentPoint.Coordinates))
+                pointsVisited.Add(guard.CurrentPoint.Coordinates);
         }
-        
-        Console.WriteLine(guard.PointsSeen);
+
+        int pointsSeen = guard.PointsSeen;
+        int loops = 0;
+
+        foreach (var point in pointsVisited)
+        {
+            guard.Reset();
+            guard.OverrideObstacle = point;
+            
+            while (!(guard.HasLooped || guard.HasLeft))
+            {
+                guard.TakeTurn();
+                if (guard.HasLooped)
+                    loops++;
+            }
+        }
+
+        Console.WriteLine($"Part 1: {pointsSeen} | Part 2: {loops} | Time taken: {DateTime.Now.Millisecond - time}");
     }
 }
 
-public static class PointLookup
-{
-    public static Dictionary<(int x, int y), Point> Points = new Dictionary<(int x, int y), Point>();
-}
 
 public class Point
 {
     public (int x, int y) Coordinates;
+    public static (int x, int y) StartCoordinates;
 
     public bool IsObstacle;
 
-    public bool HasBeenSeen => HasFacedDirection[CardinalDirection.Up] || HasFacedDirection[CardinalDirection.Down] || HasFacedDirection[CardinalDirection.Left] || HasFacedDirection[CardinalDirection.Right];
+    public bool HasBeenSeen = false;
 
+    public void Reset()
+    {
+        HasBeenSeen = false;
+        HasFacedDirection = GetNewDirectionDict();
+    }
+    
     public Dictionary<CardinalDirection, bool> HasFacedDirection = new Dictionary<CardinalDirection, bool>()
     {
         { CardinalDirection.Up , false},
@@ -66,14 +92,21 @@ public class Point
         { CardinalDirection.Left , false},
     };
 
+    private Dictionary<CardinalDirection, bool> GetNewDirectionDict()
+    {
+        return new Dictionary<CardinalDirection, bool>()
+        {
+            { CardinalDirection.Up , false},
+            { CardinalDirection.Right , false},
+            { CardinalDirection.Down , false},
+            { CardinalDirection.Left , false},
+        };
+    }
+
     public Point(int x, int y, bool isObstacle, CardinalDirection dir)
     {
         Coordinates = new (x,y);
         IsObstacle = isObstacle;
-        if (dir != CardinalDirection.None)
-            HasFacedDirection[dir] = true;
-        
-        PointLookup.Points.Add((Coordinates.x,Coordinates.y), this);
     }
 
     public bool FaceDirection(CardinalDirection dir)
@@ -94,8 +127,29 @@ public class Guard
     public int PointsSeen = 0;
     public bool HasLooped = false;
     public bool HasLeft = false;
+
+    public (int x, int y) OverrideObstacle = (-1, -1);
+    
+    public Point[][] Points;
     
     public CardinalDirection CurrentDirection;
+
+    public void Reset()
+    {
+        PointsSeen = 0;
+        CurrentPoint = Points[Point.StartCoordinates.y][Point.StartCoordinates.x];
+        HasLooped = false;
+        HasLeft = false;
+        CurrentDirection = CardinalDirection.Up;
+        
+        for (int y = 0; y < Points.Length; y++)
+        {
+            for (int x = 0; x < Points[y].Length; x++)
+            {
+                Points[y][x].Reset();
+            }
+        }
+    }
 
     public Dictionary<CardinalDirection, (int x, int y)> CardinalToCoordinate =
         new Dictionary<CardinalDirection, (int x, int y)>()
@@ -115,27 +169,34 @@ public class Guard
             { CardinalDirection.Left, CardinalDirection.Up },
         };
 
-    public Guard((int x, int y) coordinates)
+    public Guard((int x, int y) coordinates, Point[][] points)
     {
-        CurrentPoint = PointLookup.Points[coordinates];
+        Points = points;
+        CurrentPoint = Points[coordinates.y][coordinates.x];
         CurrentDirection = CardinalDirection.Up;
         PointsSeen = 1;
     }
 
     public void TakeTurn()
     {
-        var forwardCoords = (CurrentPoint.Coordinates.x + CardinalToCoordinate[CurrentDirection].x, CurrentPoint.Coordinates.y + CardinalToCoordinate[CurrentDirection].y);
-        if (!PointLookup.Points.TryGetValue(forwardCoords, out var forwardPoint))
+        (int x, int y) forwardCoords = (CurrentPoint.Coordinates.x + CardinalToCoordinate[CurrentDirection].x, CurrentPoint.Coordinates.y + CardinalToCoordinate[CurrentDirection].y);
+        bool pointExists = forwardCoords.y < Points.Length && forwardCoords.x < Points[0].Length && forwardCoords.x >= 0 && forwardCoords.y >= 0;
+        if (!pointExists)
         {
             HasLeft = true;
             return;
         }
-        if (!forwardPoint.IsObstacle)
+        Point forwardPoint = Points[forwardCoords.y][forwardCoords.x];
+
+        if (!forwardPoint.IsObstacle && forwardPoint.Coordinates != OverrideObstacle)
         {
             CurrentPoint = forwardPoint;
             if (!CurrentPoint.HasBeenSeen)
+            {
                 PointsSeen++;
-            if (forwardPoint.FaceDirection(CurrentDirection))
+                CurrentPoint.HasBeenSeen = true;
+            }
+            if (CurrentPoint.FaceDirection(CurrentDirection))
             {
                 HasLooped = true;
                 return;
