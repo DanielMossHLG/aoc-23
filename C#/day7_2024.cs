@@ -115,7 +115,7 @@ public static class Day7_2024
     {
         public int Value;
 
-        public OperationSlot Next;
+        public OperationSlot? Next;
 
         public void IncreaseValue()
         {
