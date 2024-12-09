@@ -2,6 +2,7 @@ public static class Day8_2024
 {
     public static void Solution()
     {
+        var time = DateTime.Now;
         string rawInput = Utils.GetInput("day8_2024.txt").Trim();
 
         string[] lines = rawInput.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
@@ -68,6 +69,7 @@ public static class Day8_2024
         }
         
         Console.WriteLine(Results.Part1);
+        Console.WriteLine(DateTime.Now - time);
     }
 
     public static class Results
