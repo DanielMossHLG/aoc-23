@@ -2,7 +2,7 @@ public static class Day7_2024
 {
     public static void Solution()
     {
-        int time = DateTime.Now.Millisecond;
+        var time = DateTime.Now;
         string rawInput = Utils.GetInput("day7_2024.txt").Trim();
 
         string[] lines = rawInput.Split('\n', StringSplitOptions.TrimEntries);
@@ -31,7 +31,7 @@ public static class Day7_2024
                 part2 += entry.Value;
         }
         
-        Console.WriteLine($"Part 1: {part1} | Part 2: {part2}");
+        Console.WriteLine($"Part 1: {part1} | Part 2: {part2} | Time: {DateTime.Now - time}");
     }
 
     public class Entry

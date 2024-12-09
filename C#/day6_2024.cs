@@ -4,7 +4,7 @@ public static class Day6_2024
     
     public static void Solution()
     {
-        int time = DateTime.Now.Millisecond;
+        var time = DateTime.Now;
         string rawInput = Utils.GetInput("day6_2024.txt").Trim();
 
         string[] lines = rawInput.Split('\n', StringSplitOptions.TrimEntries);
@@ -64,7 +64,7 @@ public static class Day6_2024
             }
         }
 
-        Console.WriteLine($"Part 1: {pointsSeen} | Part 2: {loops} | Time taken: {DateTime.Now.Millisecond - time}");
+        Console.WriteLine($"Part 1: {pointsSeen} | Part 2: {loops} | Time taken: {DateTime.Now - time}");
     }
 }
 
