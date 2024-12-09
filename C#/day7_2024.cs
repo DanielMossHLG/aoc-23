@@ -55,39 +55,78 @@ public static class Day7_2024
             int validSolutions = 0;
             int validSolutionsWithConcat = 0;
             
-            List<int> operations = new List<int>();
-
+            List<OperationSlot> operations = new List<OperationSlot>();
+            
             for (int i = 0; i < NumberOfOperations; i++)
             {
-                operations.Add(0);
+                operations.Add(new OperationSlot());
             }
-
-            for (int i = 0; i <  NumberOfOperations; i++)
+            
+            for (int i = 0; i < NumberOfOperations - 1; i++)
             {
-                //TODO - make a proper permutable here
-                foreach (var perm in perms)
-                    if (AnswerValid(perm.ToList()))
-                        validSolutions++;
+                operations[i].Next = operations[i + 1];
+            }
+            
+
+            for (int i = 0; i < MathF.Pow(3, NumberOfOperations); i++)
+            {
+                int check = AnswerValid(operations);
+                if (check == 1)
+                    validSolutions++;
+                if (check > 0)
+                    validSolutionsWithConcat++;
+                
+                operations[0].IncreaseValue();
             }
 
             return (validSolutions, validSolutionsWithConcat);
         }
 
-        private bool AnswerValid(List<int> operations)
+        private int AnswerValid(List<OperationSlot> operations)
         {
             long output = Components[0];
+            
+            bool containsConcat = false;
 
             for (int i = 1; i < Components.Count; i++)
             {
-                if (operations[i-1] == 1)
+                if (operations[i-1].Value == 0)
                     output += Components[i];
-                else if (operations[i-1] == 2)
+                else if (operations[i-1].Value == 1)
                     output *= Components[i];
                 else
+                {
                     output = long.Parse($"{output}{Components[i]}");
+                    containsConcat = true;
+                }
             }
 
-            return output == Value;
+            if (output != Value)
+                return 0;
+            if (containsConcat)
+                return 2;
+
+            return 1;
+        }
+    }
+
+
+    public class OperationSlot
+    {
+        public int Value;
+
+        public OperationSlot Next;
+
+        public void IncreaseValue()
+        {
+            if (Value < 2)
+                Value++;
+            else
+            {
+                Value = 0;
+                if (Next != null)
+                    Next.IncreaseValue();
+            }
         }
     }
 }
