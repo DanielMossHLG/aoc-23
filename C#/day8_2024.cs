@@ -7,10 +7,7 @@ public static class Day8_2024
         string[] lines = rawInput.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         Node[][] nodes = new Node[lines.Length][];
-
-        //string output = "";
         
-        Dictionary< (int x, int y), Node> nodesDict = new Dictionary<(int x, int y), Node>();
         Dictionary<char, List<Node>> nodesGroupDict = new Dictionary<char, List<Node>>();
 
         for (int y = 0; y < lines.Length; y++)
@@ -20,19 +17,13 @@ public static class Day8_2024
             for (int x = 0; x < lines[y].Length; x++)
             {
                 nodes[y][x] = new Node(lines[y][x], x, y);
-                
-                nodesDict.Add((x,y), nodes[y][x]);
 
                 if (nodesGroupDict.ContainsKey(lines[y][x]))
                     nodesGroupDict[lines[y][x]].Add(nodes[y][x]);
                 else
                     nodesGroupDict.Add(lines[y][x], [ nodes[y][x] ]);
-            
-                //output += nodes[y][x].Antenna;
             }
         }
-
-        //Console.WriteLine(output);
 
         for (int y = 0; y < lines.Length; y++)
         {
@@ -44,18 +35,14 @@ public static class Day8_2024
                 Node currentNode = nodes[y][x];
                 List<Node> commonNodes = nodesGroupDict[lines[y][x]];
                 int currentNodeIndex = commonNodes.IndexOf(currentNode);
-                
-                //Console.WriteLine($"Node: {currentNode.Coordinates} | Current Node Index: {currentNodeIndex}");
 
                 for (int i = currentNodeIndex + 1; i < commonNodes.Count; i++)
                 {
                     Node targetNode = commonNodes[i];
                     currentNode.AddAntinode(lines[y][x]);
                     targetNode.AddAntinode(lines[y][x]);
-                    //Console.WriteLine($"Target Node: {targetNode.Coordinates} i: {i}");
-                    (int x, int y) direction = AddCoords(currentNode.Coordinates, targetNode.Coordinates, true);
                     
-                    //Console.WriteLine(direction);
+                    (int x, int y) direction = AddCoords(currentNode.Coordinates, targetNode.Coordinates, true);
                     
                     (int x, int y) antinodeUpCoords = AddCoords(targetNode.Coordinates, direction, true);
                     (int x, int y) antinodeDownCoords = AddCoords(currentNode.Coordinates, direction, false);
@@ -70,7 +57,6 @@ public static class Day8_2024
 
                     while (CheckCoordsValid(antinodeDownCoords, lines[y].Length, lines.Length))
                     {
-                        //Console.WriteLine($"Coords valid: {antinode2Coords}");
                         Node antinode2 = nodes[antinodeDownCoords.y][antinodeDownCoords.x];
                         antinode2.AddAntinode(lines[y][x]);
                         
