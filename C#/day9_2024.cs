@@ -86,8 +86,6 @@ public static class Day9_2024
         long result2 = 0;
         int memoryIndex = 0;
 
-        bool isDone = false;
-
         for (int i = 0; i < memoryBlocks.Count; i++)
         {
             for (int j = 0; j < memoryBlocks[i].Length; j++)
