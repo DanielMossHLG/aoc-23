@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+
 public static class Day11_2024
 {
     public static void Solution()
@@ -8,92 +11,83 @@ public static class Day11_2024
         Input input = new Input(rawInput);
 
 
-        input.Blink(1);
+        input.Blink(75);
         
         Console.WriteLine("Final count: " + input.Nodes.Count + $" times: {DateTime.Now - time}");
     }
 
     public class Input(string input)
     {
-        public List<long> Numbers = input.Split(' ').Select(long.Parse).ToList();
-        
         public List<Node> Nodes = new List<Node>();
         
-        public Dictionary<long, Map> Maps = new Dictionary<long, Map>();
+        public List<long> Numbers = input.Split(' ').Select(long.Parse).ToList();
 
+        public Dictionary<long, (long numberValue, long newNodeValue, int stepsTaken)> Map = new Dictionary<long, (long numberValue, long newNodeValue, int stepsTaken)>();
+        
         public void Blink(int steps)
         {
             for (int i = 0; i < Numbers.Count; i++)
             {
-                Node node = new Node(0, Numbers[i]);
-                Nodes.Add(node);
+                Nodes.Add(new Node(Numbers[i], 0));
             }
-            
+
+
             for (int i = 0; i < Nodes.Count; i++)
             {
-                while (Nodes[i].Steps < steps)
-                {
-                    if (Maps.TryGetValue(Nodes[i].Value, out Map map))
-                    {
-                        if (Nodes[i].Steps + map.StepsToSplit <= steps)
-                        {
-                            Nodes[i].Value = map.SplitsTo[0];
-                            Nodes[i].Steps += map.StepsToSplit;
-                            Node node = new Node(Nodes[i].Steps, map.SplitsTo[1]);
-                            Nodes.Insert(i + 1, node);
-                            Nodes[i].Steps += map.StepsToSplit;
-                        }
-                        Console.WriteLine($"Found a {Nodes[i].Value}. Could not get value because it had {Nodes[i].Steps} steps.");
-                        continue;
-                    }
-                    Nodes[i].Steps += GetStepsToSplit(Nodes[i], Nodes[i].Value, 0, Nodes[i].Value, steps);
-                    
-                    if (Nodes[i].Value == 2)
-                        Console.WriteLine($"Found a 2: Node steps - {Nodes[i].Steps} | {steps}");
-                }
-            }
-            
-            ShowNumbers();
-            // foreach (var (value, map) in Maps)
-            // {
-            //     Console.WriteLine($"Map for {value}: {map.SplitsTo[0]} | {map.SplitsTo[1]} - {map.StepsToSplit}");
-            // }
-        }
-
-        public int GetStepsToSplit(Node node, long startValue, int steps, long value, int totalSteps)
-        {
-            if (node.Steps + steps > totalSteps)
-            {
-                return steps;
-            }
-            
-            if (value == 0)
-            {
-                node.Value = 1;
-                return GetStepsToSplit(node, startValue, steps + 1, 1, totalSteps);
-            }
-
-            
-            string val = value.ToString();
-            if (val.Length % 2 == 0)
-            {
-                Map map = new Map(startValue, steps + 1)
-                {
-                    SplitsTo = [long.Parse(val.Substring(0, val.Length / 2)), long.Parse(val.Substring(val.Length / 2))]
-                };
-                Maps.Add(startValue, map);
-
-                node.Value = map.SplitsTo[0];
-                Node newNode = new Node(node.Steps + map.StepsToSplit, map.SplitsTo[1]);
-                Nodes.Insert(Nodes.IndexOf(node) + 1, newNode);
+                List<Node> newNodes = new List<Node>();
                 
-                return map.StepsToSplit;
+                while (Nodes[i].CurrentStep < steps)
+                {
+                    long numberValue, newNodeValue;
+                    int stepsTaken;
+                    
+                    if (Map.ContainsKey(Nodes[i].Value))
+                    {
+                        (numberValue, newNodeValue, stepsTaken) = Map[Nodes[i].Value];
+                    }
+                    else
+                    {
+                        (numberValue, newNodeValue, stepsTaken) = GetOutput(Nodes[i].Value, 0);
+                        Map.Add(Nodes[i].Value, (numberValue, newNodeValue, stepsTaken));
+                    }
+                    
+                    Nodes[i].CurrentStep += stepsTaken;
+
+                    if (Nodes[i].CurrentStep <= steps)
+                    {
+                        Nodes[i].Value = numberValue;
+                        Node node = new Node(newNodeValue, Nodes[i].CurrentStep);
+                        newNodes.Add(node);
+                    }
+                }
+                
+                Nodes.AddRange(newNodes);
             }
-            
-            node.Value = value * 2024;
-            return GetStepsToSplit(node, startValue, steps + 1, value * 2024, totalSteps);
         }
-        
+
+        public (long nextValue, long newValue, int steps) GetOutput(long number, int steps)
+        {
+            if (number == 0)
+            {
+                return GetOutput(1, steps + 1);
+            }
+
+            if (number.ToString().Length % 2 == 0)
+            {
+                string str = number.ToString();
+                long num1 = long.Parse(str.Substring(0, str.Length / 2));
+                long num2 = long.Parse(str.Substring(str.Length / 2));
+                return (num1, num2, steps + 1);
+            }
+
+            return GetOutput(number * 2024, steps + 1);
+        }
+
+        public class Node(long value, int steps)
+        {
+            public long Value = value;
+            public int CurrentStep = steps;
+        }
         
         public void ShowNumbers()
         {
@@ -107,20 +101,5 @@ public static class Day11_2024
             Console.WriteLine(output);
         }
     }
-
-    public class Node(int steps, long value)
-    {
-        public int Steps = steps;
-        public long Value = value;
-    }
-
-    public class Map(long start, int steps)
-    {
-        public long StartNumber = start;
-
-        public int StepsToSplit = steps;
-
-        public long[] SplitsTo = [];
-    }
-
+    
 }
