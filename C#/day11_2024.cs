@@ -1,6 +1,3 @@
-using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
-
 public static class Day11_2024
 {
     public static void Solution()
@@ -9,11 +6,11 @@ public static class Day11_2024
         string rawInput = Utils.GetInput("day11_2024.txt").Trim();
         
         Input input = new Input(rawInput);
+        input.Result = input.Numbers.Count;
 
-
-        input.Blink(75);
+        input.Blink(25);
         
-        Console.WriteLine("Final count: " + input.Nodes.Count + $" times: {DateTime.Now - time}");
+        Console.WriteLine("Final count: " + input.Result + $" times: {DateTime.Now - time}");
     }
 
     public class Input(string input)
@@ -23,6 +20,8 @@ public static class Day11_2024
         public List<long> Numbers = input.Split(' ').Select(long.Parse).ToList();
 
         public Dictionary<long, (long numberValue, long newNodeValue, int stepsTaken)> Map = new Dictionary<long, (long numberValue, long newNodeValue, int stepsTaken)>();
+
+        public long Result;
         
         public void Blink(int steps)
         {
@@ -30,8 +29,7 @@ public static class Day11_2024
             {
                 Nodes.Add(new Node(Numbers[i], 0));
             }
-
-
+            
             for (int i = 0; i < Nodes.Count; i++)
             {
                 List<Node> newNodes = new List<Node>();
@@ -41,9 +39,9 @@ public static class Day11_2024
                     long numberValue, newNodeValue;
                     int stepsTaken;
                     
-                    if (Map.ContainsKey(Nodes[i].Value))
+                    if (Map.TryGetValue(Nodes[i].Value, out var value))
                     {
-                        (numberValue, newNodeValue, stepsTaken) = Map[Nodes[i].Value];
+                        (numberValue, newNodeValue, stepsTaken) = value;
                     }
                     else
                     {
@@ -55,12 +53,16 @@ public static class Day11_2024
 
                     if (Nodes[i].CurrentStep <= steps)
                     {
+                        Result++;
+                    }
+
+                    if (Nodes[i].CurrentStep < steps)
+                    {
                         Nodes[i].Value = numberValue;
                         Node node = new Node(newNodeValue, Nodes[i].CurrentStep);
                         newNodes.Add(node);
                     }
                 }
-                
                 Nodes.AddRange(newNodes);
             }
         }
@@ -101,5 +103,4 @@ public static class Day11_2024
             Console.WriteLine(output);
         }
     }
-    
 }
