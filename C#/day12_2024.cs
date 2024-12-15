@@ -45,11 +45,16 @@ public static class Day12_2024
         }
 
         long result = 0;
-
+        long result2 = 0;
+        
         foreach (var plot in plots)
             result += plot.Points.Count * plot.GetPerimeter();
         
-        Console.WriteLine($"Part 1: {result}");
+
+        foreach (var plot in plots)
+            result2 += plot.Points.Count * plot.GetNumberOfSides();
+            
+        Console.WriteLine($"Part 1: {result} | Part 2: {result2} | Time: {DateTime.Now - time}");
     }
 
     public class Point(int x, int y, char c)
@@ -57,6 +62,8 @@ public static class Day12_2024
         public (int x, int y) Coordinates = (x, y);
         public char Type = c;
         public bool HasBeenPlaced = false;
+
+        public List<Direction> Edges = new List<Direction>();
     }
 
     public class Plot(char c)
@@ -114,16 +121,64 @@ public static class Day12_2024
         public int CheckPerimeter(Point point)
         {
             int perim = 0;
-            foreach (var dir in DirectionLookup.Values)
+            foreach (var (dir, coord) in DirectionLookup)
             {
                 (int x, int y) coords = point.Coordinates;
-                coords.x += dir.x;
-                coords.y += dir.y;
+                coords.x += coord.x;
+                coords.y += coord.y;
                 if (!Coordinates.Contains(coords))
+                {
                     perim++;
+                    point.Edges.Add(dir);
+                }
             }
 
             return perim;
+        }
+
+        public long GetNumberOfSides()
+        {
+            if (points.Count == 1)
+                return 4;
+
+            long sides = 0;
+
+            foreach (var point in Points)
+            {
+                if (point.Edges.Contains(Direction.Up))
+                {
+                    if (!Coordinates.Contains((point.Coordinates.x + 1, point.Coordinates.y)))
+                        sides++;
+                    else if (!points[point.Coordinates.y][point.Coordinates.x + 1].Edges.Contains(Direction.Up))
+                        sides++;
+                }
+                
+                if (point.Edges.Contains(Direction.Right))
+                {
+                    if (!Coordinates.Contains((point.Coordinates.x, point.Coordinates.y - 1)))
+                        sides++;
+                    else if (!points[point.Coordinates.y - 1][point.Coordinates.x].Edges.Contains(Direction.Right))
+                        sides++;
+                }
+                
+                if (point.Edges.Contains(Direction.Down))
+                {
+                    if (!Coordinates.Contains((point.Coordinates.x - 1, point.Coordinates.y)))
+                        sides++;
+                    else if (!points[point.Coordinates.y][point.Coordinates.x - 1].Edges.Contains(Direction.Down))
+                        sides++;
+                }
+                
+                if (point.Edges.Contains(Direction.Left))
+                {
+                    if (!Coordinates.Contains((point.Coordinates.x, point.Coordinates.y + 1)))
+                        sides++;
+                    else if (!points[point.Coordinates.y + 1][point.Coordinates.x].Edges.Contains(Direction.Left))
+                        sides++;
+                }
+            }
+
+            return sides;
         }
     }
 
